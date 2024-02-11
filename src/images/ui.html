@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>WooCommerce Order Details</title>
+</head>
+<body>
+  
+    <form id="orderForm">
+        <label for="orderID">Order ID:</label>
+        <input type="text" id="orderID" name="orderID" style="height: 25px;" required>
+        <button type="button" onclick="getOrderDetails()" style="background-color: white;height: 35px; margin: 25px;">Go</button>
+        <!-- <button type="button" onclick="completeOrder()" style="background-color: red;height: 35px;">Complete Order</button>
+    </form> -->
+
+    <div id="OrderDetails"></div>
+    <div id="updateStatusResult"></div>
+
+    <script>
+        // Function to fetch order details using WooCommerce API
+        const apiKey = 'ck_88dd877c0eac2d110bb3a67523a06805121a0321';
+        const apiSecret = 'cs_b80c89da4f49b89d44e3bc25dabd77a4d7e0d67a';
+  
+       // Encode the API key and secret as base64
+       const base64Credentials = btoa(apiKey + ':' + apiSecret);
+
+        function getOrderDetails() {
+            const orderID = document.getElementById("orderID").value;
+            // Replace with your actual WooCommerce API endpoint and authentication
+            const apiEndpoint = "https://kegeberew.com/wp-json/wc/v3/orders/" + orderID;
+            fetch(apiEndpoint, {
+                method: "GET",
+                headers: {
+                    "Authorization": 'Basic ' + base64Credentials, // Replace with your API key
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                const orderDetails = document.getElementById("OrderDetails");
+                const filteredData = {
+                    order_id: data.order_id,
+                    customer_name: data.billing.first_name + ' ' + data.billing.last_name,
+                    order_status: data.status,
+                    total: data.total,
+                    email:data.billing.email,
+                    address:data.billing.address_1,
+                    phone:data.billing.phone,
+                };
+                orderDetails.innerHTML = JSON.stringify(filteredData, null, 4);
+            })
+            .catch(error => console.error("Error:", error));
+        }
+
+        // Function to update order status to 'completed' using WooCommerce API
+        function completeOrder() {
+            const orderID = document.getElementById("orderID").value;
+            // Replace with your actual WooCommerce API endpoint and authentication
+            const apiEndpoint = "https://kegeberew.com/wp-json/wc/v3/orders/" + orderID;
+
+            fetch(apiEndpoint, {
+                method: "POST",
+                headers: {
+                    "Authorization": 'Basic ' + base64Credentials, // Replace with your API key
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify({ status: "completed" })
+            })
+            .then(response => response.json())
+            .then(data => {
+                const updateStatusResult = document.getElementById("updateStatusResult");
+                updateStatusResult.innerHTML = "Order status updated: " + data.status;
+            })
+            .catch(error => console.error("Error:", error));
+        }
+    </script>
+</body>
+</html>
